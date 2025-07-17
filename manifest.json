@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Bitbucket Commit Highlighter",
+  "version": "1.0",
+  "description": "Highlights commit messages in Bitbucket with different colors based on prefixes (fix:, feat:, etc.)",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://bitbucket.org/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://bitbucket.org/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon16.png",
+    "128": "icon16.png"
+  }
+} 

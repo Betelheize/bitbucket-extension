@@ -1,0 +1,90 @@
+/* Bitbucket Commit Highlighter Styles */
+
+/* Base styles for highlighted commit messages */
+.commit-highlighted {
+  transition: all 0.2s ease-in-out !important;
+  display: inline-block !important;
+  text-decoration: none !important;
+}
+
+/* Hover effects for highlighted commits */
+.commit-highlighted:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Specific color overrides for better visibility */
+.commit-highlighted[style*="background-color: #dc3545"] {
+  background-color: #dc3545 !important; /* fix: - Red */
+}
+
+.commit-highlighted[style*="background-color: #28a745"] {
+  background-color: #28a745 !important; /* feat: - Green */
+}
+
+.commit-highlighted[style*="background-color: #17a2b8"] {
+  background-color: #17a2b8 !important; /* docs: - Blue */
+}
+
+.commit-highlighted[style*="background-color: #ffc107"] {
+  background-color: #ffc107 !important; /* style: - Yellow */
+  color: #212529 !important; /* Dark text for yellow background */
+}
+
+.commit-highlighted[style*="background-color: #6f42c1"] {
+  background-color: #6f42c1 !important; /* refactor: - Purple */
+}
+
+.commit-highlighted[style*="background-color: #fd7e14"] {
+  background-color: #fd7e14 !important; /* test: - Orange */
+}
+
+.commit-highlighted[style*="background-color: #6c757d"] {
+  background-color: #6c757d !important; /* chore: - Gray */
+}
+
+.commit-highlighted[style*="background-color: #e83e8c"] {
+  background-color: #e83e8c !important; /* perf: - Pink */
+}
+
+.commit-highlighted[style*="background-color: #20c997"] {
+  background-color: #20c997 !important; /* ci: - Teal */
+}
+
+/* Ensure proper spacing in tables */
+td .commit-highlighted {
+  margin: 1px 2px !important;
+  display: inline-block !important;
+}
+
+/* Specific styling for Bitbucket table elements */
+.css-1tcga9b .commit-highlighted,
+.css-19mqx9h .commit-highlighted {
+  margin: 1px 2px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+}
+
+/* Specific styling for branch links */
+.css-1nso09x.commit-highlighted,
+a[href*="/branch/"].commit-highlighted {
+  margin: 1px 2px !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  text-decoration: none !important;
+}
+
+/* Make sure links remain clickable */
+.commit-highlighted a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .commit-highlighted {
+    padding: 1px 4px !important;
+    font-size: 0.9em !important;
+  }
+} 
