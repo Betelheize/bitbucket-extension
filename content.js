@@ -1,34 +1,30 @@
-// Bitbucket Commit Highlighter
-// Highlights commit messages with different colors based on prefixes
+// Bitbucket Commit Highlighter + Controls
+// Highlights commit messages and offers filtering/copy controls
 
-// Define commit message patterns and their corresponding colors
-const commitPatterns = {
-  'fix:': '#ffc107',      // Yellow for bug fixes
-  'feat:': '#6f42c1',     // Purple for new features
-  'docs:': '#17a2b8',     // Blue for documentation
-  'style:': '#ffc107',    // Yellow for formatting
-  'refactor:': '#6f42c1', // Purple for refactoring
-  'test:': '#fd7e14',     // Orange for tests
-  'chore:': '#6c757d',    // Gray for maintenance
-  'perf:': '#e83e8c',     // Pink for performance
-  'ci:': '#20c997',       // Teal for CI/CD
-  'build:': '#fd7e14',    // Orange for build
-  'revert:': '#6c757d',   // Gray for reverts
-  'MERGED': '#28a745',    // Green for merged commits (commits only)
-  'feat/': '#6f42c1',     // Purple for new features
-  'fix/': '#ffc107',      // Yellow for bug fixes
-  'docs/': '#17a2b8',     // Blue for documentation
-  'style/': '#ffc107',    // Yellow for formatting
-  'refactor/': '#6f42c1', // Purple for refactoring
-  'test/': '#fd7e14',     // Orange for tests
-  'chore/': '#6c757d',    // Gray for maintenance
-  'feature/': '#6f42c1',  // Purple for new features
-  'bug/': '#ffc107',      // Yellow for bug fixes
-};
+// Rules describing categories, colors and patterns (commit and branch)
+const bbchRules = [
+  { type: 'feat', label: 'feat', color: '#6f42c1', patterns: ['feat:', 'feature:', 'feat/', 'feature/'] },
+  { type: 'fix', label: 'fix', color: '#ffc107', patterns: ['fix:', 'bug:', 'fix/', 'bug/'] },
+  { type: 'docs', label: 'docs', color: '#17a2b8', patterns: ['docs:', 'docs/'] },
+  { type: 'style', label: 'style', color: '#ffc107', patterns: ['style:', 'style/'] },
+  { type: 'refactor', label: 'refactor', color: '#6f42c1', patterns: ['refactor:', 'refactor/'] },
+  { type: 'test', label: 'test', color: '#fd7e14', patterns: ['test:', 'tests:', 'test/'] },
+  { type: 'chore', label: 'chore', color: '#6c757d', patterns: ['chore:', 'chore/'] },
+  { type: 'perf', label: 'perf', color: '#e83e8c', patterns: ['perf:', 'perf/'] },
+  { type: 'ci', label: 'ci', color: '#20c997', patterns: ['ci:', 'ci/'] },
+  { type: 'build', label: 'build', color: '#fd7e14', patterns: ['build:', 'build/'] },
+  { type: 'revert', label: 'revert', color: '#6c757d', patterns: ['revert:'] },
+  { type: 'merged', label: 'MERGED', color: '#28a745', patterns: ['MERGED'] },
+];
+
+const bbchTypeToRule = bbchRules.reduce((acc, r) => { acc[r.type] = r; return acc; }, {});
 
 // Global page detection variables
 let isCommitsPage = false;
 let isBranchesPage = false;
+
+// Simple filter state (no persistence)
+let bbchFilterType = 'all';
 
 // Function to update page detection
 function updatePageDetection() {
@@ -81,18 +77,19 @@ function highlightCommitMessages() {
         return;
       }
 
-      // Check each pattern
-      for (const [pattern, color] of Object.entries(commitPatterns)) {
-        // Skip MERGED pattern on branches page
-        if (pattern === 'MERGED' && isBranchesPage) {
-          continue;
-        }
-        
-        if (text.toLowerCase().startsWith(pattern.toLowerCase())) {
+      // Determine matching rule
+      for (const rule of bbchRules) {
+        // Skip MERGED on branches page
+        if (rule.type === 'merged' && isBranchesPage) continue;
+
+        const matched = rule.patterns.some(p => text.toLowerCase().startsWith(p.toLowerCase()));
+        if (matched) {
           // Add highlighting class and style with enhanced glass morphism effect
           element.classList.add('commit-highlighted');
+          element.dataset.bbchType = rule.type;
           
           // Create a more sophisticated glass effect
+          const color = rule.color;
           element.style.background = `linear-gradient(135deg, ${color}15 0%, ${color}08 50%, ${color}20 100%)`;
           element.style.color = color;
           element.style.padding = '6px 12px';
@@ -170,8 +167,15 @@ function highlightCommitMessages() {
           break;
         }
       }
+      // If no rule matched, mark as other
+      if (!element.dataset.bbchType) {
+        element.dataset.bbchType = 'other';
+      }
     });
   });
+
+  // After highlighting, apply filters
+  applyFilters();
 }
 
 // Function to observe DOM changes and highlight new commit messages
@@ -240,15 +244,14 @@ function init() {
         return;
       }
       
-      // Check each pattern
-      for (const [pattern, color] of Object.entries(commitPatterns)) {
-        // Skip MERGED pattern on branches page
-        if (pattern === 'MERGED' && isBranchesPage) {
-          continue;
-        }
-        
-        if (text.toLowerCase().startsWith(pattern.toLowerCase())) {
+      // Determine matching rule
+      for (const rule of bbchRules) {
+        if (rule.type === 'merged' && isBranchesPage) continue;
+        const color = rule.color;
+        const matched = rule.patterns.some(p => text.toLowerCase().startsWith(p.toLowerCase()));
+        if (matched) {
           span.classList.add('commit-highlighted');
+          span.dataset.bbchType = rule.type;
           
           // Create a more sophisticated glass effect
           span.style.background = `linear-gradient(135deg, ${color}15 0%, ${color}08 50%, ${color}20 100%)`;
@@ -324,6 +327,9 @@ function init() {
           break;
         }
       }
+      if (!span.dataset.bbchType) {
+        span.dataset.bbchType = 'other';
+      }
     });
 
     // Look specifically for branch names in the branches table
@@ -346,11 +352,17 @@ function init() {
           return;
         }
         
-        // Check each pattern for branch names (feat/, fix/, etc.)
-        for (const [pattern, color] of Object.entries(commitPatterns)) {
-          const branchPattern = pattern.replace(':', '/'); // Convert commit: to commit/
-          if (text.toLowerCase().startsWith(branchPattern.toLowerCase())) {
+        // Check each rule for branch names (feat/, fix/, etc.)
+        for (const rule of bbchRules) {
+          if (rule.type === 'merged') continue; // not for branches
+          const color = rule.color;
+          const matched = rule.patterns.some(p => {
+            const branchPattern = p.replace(':', '/');
+            return text.toLowerCase().startsWith(branchPattern.toLowerCase());
+          });
+          if (matched) {
             link.classList.add('commit-highlighted');
+            link.dataset.bbchType = rule.type;
             
             // Create a more sophisticated glass effect
             link.style.background = `linear-gradient(135deg, ${color}15 0%, ${color}08 50%, ${color}20 100%)`;
@@ -427,6 +439,9 @@ function init() {
             break;
           }
         }
+        if (!link.dataset.bbchType) {
+          link.dataset.bbchType = 'other';
+        }
       });
     });
 
@@ -442,15 +457,13 @@ function init() {
       
       // Only process if this looks like a branch name (contains / and is in a table context)
       if (text.includes('/') && (element.closest('table') || element.closest('td'))) {
-        for (const [pattern, color] of Object.entries(commitPatterns)) {
-          // Skip MERGED pattern on branches page
-          if (pattern === 'MERGED' && isBranchesPage) {
-            continue;
-          }
-          
-          const branchPattern = pattern.replace(':', '/');
-          if (text.toLowerCase().startsWith(branchPattern.toLowerCase())) {
+        for (const rule of bbchRules) {
+          if (rule.type === 'merged') continue;
+          const color = rule.color;
+          const matched = rule.patterns.some(p => text.toLowerCase().startsWith(p.replace(':','/').toLowerCase()));
+          if (matched) {
             element.classList.add('commit-highlighted');
+            element.dataset.bbchType = rule.type;
             
             // Create a more sophisticated glass effect
             element.style.background = `linear-gradient(135deg, ${color}15 0%, ${color}08 50%, ${color}20 100%)`;
@@ -530,9 +543,15 @@ function init() {
             break;
           }
         }
+        if (!element.dataset.bbchType) {
+          element.dataset.bbchType = 'other';
+        }
       }
     });
   }, 500);
+
+  // Ensure controls and filters are ready
+  bbchEnsureControls();
 }
 
 // Start when DOM is ready
@@ -551,3 +570,60 @@ new MutationObserver(() => {
     setTimeout(init, 500); // Wait for new content to load
   }
 }).observe(document, { subtree: true, childList: true }); 
+
+// ---------------------
+// Controls + Filtering
+// ---------------------
+
+function bbchEnsureControls() {
+  if (document.querySelector('.bbch-controls')) return;
+
+  const panel = document.createElement('div');
+  panel.className = 'bbch-controls';
+  panel.innerHTML = `
+    <h4>Commit Filter</h4>
+    <div class="bbch-row" style="margin-bottom:6px">
+      <label style="font-size:12px; opacity:0.9;">Filter:</label>
+      <select data-bbch-select style="font-size:12px; padding:4px 8px; border-radius:8px; background:rgba(255,255,255,0.06); color:#e6edf3; border:1px solid rgba(255,255,255,0.15);">
+        <option value="all">All</option>
+      </select>
+    </div>
+  `;
+
+  document.body.appendChild(panel);
+
+  // Populate select options
+  const select = panel.querySelector('select[data-bbch-select]');
+  if (select) {
+    bbchRules.forEach(rule => {
+      const opt = document.createElement('option');
+      opt.value = rule.type;
+      opt.textContent = rule.label;
+      select.appendChild(opt);
+    });
+    select.addEventListener('change', (e) => {
+      const target = e.target;
+      bbchFilterType = target.value || 'all';
+      applyFilters();
+    });
+  }
+}
+
+function getRowContainer(element) {
+  const container = element.closest('tr') || element.closest('li') || element.closest('[role="row"]');
+  return container || element;
+}
+
+function applyFilters() {
+  const all = document.querySelectorAll('.commit-highlighted');
+  all.forEach(el => {
+    const type = el.dataset.bbchType || 'other';
+    const row = getRowContainer(el);
+    const shouldShow = bbchFilterType === 'all' || type === bbchFilterType;
+    if (!shouldShow) {
+      row.classList.add('bbch-hidden');
+    } else {
+      row.classList.remove('bbch-hidden');
+    }
+  });
+}

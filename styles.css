@@ -88,3 +88,74 @@ a[href*="/branch/"].commit-highlighted {
     font-size: 0.9em !important;
   }
 } 
+
+/* Floating Control Panel */
+.bbch-controls {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  background: rgba(13, 17, 23, 0.75);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  color: #e6edf3;
+  border: 1px solid rgba(240, 246, 252, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+  padding: 10px 12px;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.bbch-controls h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
+}
+
+.bbch-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.bbch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+}
+
+.bbch-chip:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.bbch-chip input {
+  margin: 0;
+}
+
+/* Minimal mode removes buttons/legend styles */
+
+/* Hidden rows when filtered */
+.bbch-hidden {
+  display: none !important;
+}
+
+.bbch-badge {
+  margin-left: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: #e6edf3;
+}
